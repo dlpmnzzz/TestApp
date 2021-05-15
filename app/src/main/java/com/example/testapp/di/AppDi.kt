@@ -1,5 +1,9 @@
 package com.example.testapp.di
 
+import com.example.testapp.data.api.ApiService
+import com.example.testapp.data.api.RetrofitBuilder
+import com.example.testapp.data.mapper.CarMapper
+import com.example.testapp.data.mapper.ManufacturerMapper
 import com.example.testapp.data.repositories.CarRepoImpl
 import com.example.testapp.data.repositories.CarRepository
 import com.example.testapp.data.repositories.ManufacturerRepoImpl
@@ -19,5 +23,7 @@ val appModule = module {
     single { LoadManufacturerAndCars(get(), get(), Dispatchers.IO) }
     single<CarRepository> { CarRepoImpl(get()) }
     single<ManufacturerRepository> { ManufacturerRepoImpl(get()) }
-    single<RemoteDataSource> { RemoteImpl() }
+    single<RemoteDataSource> { RemoteImpl(RetrofitBuilder.apiService, get(), get()) }
+    single { ManufacturerMapper() }
+    single { CarMapper() }
 }

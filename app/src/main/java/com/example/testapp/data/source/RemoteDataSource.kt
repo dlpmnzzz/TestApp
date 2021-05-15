@@ -1,29 +1,35 @@
 package com.example.testapp.data.source
 
+import com.example.testapp.data.api.ApiService
+import com.example.testapp.data.mapper.CarMapper
+import com.example.testapp.data.mapper.ManufacturerMapper
 import com.example.testapp.model.Item
 
 interface RemoteDataSource {
-    fun getCars() : List<Item.Car>
-    fun getManufacturers() : List<Item.Manufacturer>
+    suspend fun getCars() : List<Item.Car>
+    suspend fun getManufacturers() : List<Item.Manufacturer>
 }
 
-class RemoteImpl() : RemoteDataSource {
-    override fun getCars(): List<Item.Car> {
-        return listOf(
-            Item.Car("test1", "testName1", "1988"),
-            Item.Car("test2", "testName2", "1966"),
-            Item.Car("test1", "testName2", "1966"),
-            Item.Car("test3", "testName3", "1977"),
-            Item.Car("test2", "testName3", "1977"),
-        )
+class RemoteImpl(
+    private val apiService: ApiService,
+    private val manufacturereMapper: ManufacturerMapper,
+    private val carMapper: CarMapper
+) : RemoteDataSource {
+
+    override suspend fun getCars(): List<Item.Car> {
+        val response = apiService.getCars(CAR_URL)
+        val items = response.data
+        return items.map { carMapper.firstToSecond(it) }
     }
 
-    override fun getManufacturers(): List<Item.Manufacturer> {
-        return listOf(
-            Item.Manufacturer("test1", "brandName1", "founderName1", "1950"),
-            Item.Manufacturer("test2", "brandName2", "founderName2", "1960"),
-            Item.Manufacturer("test3", "brandName3", "founderName3", "1930"),
-        )
+    override suspend fun getManufacturers(): List<Item.Manufacturer> {
+        val response = apiService.getManufactures(MANUFACTURER_URL)
+        val responseItems = response.data
+        return responseItems?.map { manufacturereMapper.firstToSecond(it) } ?: emptyList()
     }
 
+    companion object {
+        private const val CAR_URL = "https://www.mocky.io/v2/5db9630530000095005ee272/"
+        private const val MANUFACTURER_URL = "https://www.mocky.io/v2/5db959e43000005a005ee206/"
+    }
 }
